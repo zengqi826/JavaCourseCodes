@@ -105,6 +105,8 @@ JAVA_OPTS=-Xmx4g -Xms4g -XX:+UseG1GC -XX:MaxGCPauseMillis=50
 ```
 # 编译
 javac -g GCLogAnalysis.java
+javac -encoding UTF-8  GCLogAnalysis.java
+
 # JDK8 启动程序
 java -Xmx2g -Xms2g -XX:+UseG1GC -verbose:gc -XX:+PrintGCDateStamps -XX:+PrintGCDetails -Xloggc:gc.log  GCLogAnalysis
 ```

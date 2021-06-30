@@ -256,20 +256,20 @@ PS F:\github\JavaCourseCodes\01jvm> java -Xmx512m -Xms512m -XX:+UseG1GC -verbose
 ```
 2.（选做）使用压测工具（wrk 或 sb），演练 gateway-server-0.0.1-SNAPSHOT.jar 示例。
 
-分别使用4和15并发做测试，4并发性能更好，超过15会无法执行
 java -jar -Xmx512m -Xms512m gateway-server-0.0.1-SNAPSHOT.jar
 
-sb -u http://localhost:8088/api/hello  -c 4 -N 30
+sb -u http://localhost:8088/api/hello  -c 20 -N 30
 ```
-Starting at 2021/6/29 15:53:16
+PS F:\github\JavaCourseCodes> sb -u http://localhost:8088/api/hello  -c 20 -N 30
+Starting at 2021/6/30 8:56:43
 [Press C to stop the test]
-79228   (RPS: 2190.5)
+113501  (RPS: 3253.3)                   
 ---------------Finished!----------------
-Finished at 2021/6/29 15:53:53 (took 00:00:36.2180309)
-Status 200:    79228
+Finished at 2021/6/30 8:57:18 (took 00:00:35.0619953)
+Status 200:    113508
 
-RPS: 2553 (requests/second)
-Max: 2448ms
+RPS: 3642.5 (requests/second)
+Max: 92ms
 Min: 0ms
 Avg: 0.2ms
 
@@ -279,34 +279,12 @@ Avg: 0.2ms
   80%   below 0ms
   90%   below 0ms
   95%   below 1ms
-  98%   below 1ms
-  99%   below 2ms
-99.9%   below 7ms
-```
-sb -u http://localhost:8088/api/hello  -c 15 -N 30
-```
-Starting at 2021/6/29 15:54:36
-[Press C to stop the test]
-61320   (RPS: 1693.2)
----------------Finished!----------------
-Finished at 2021/6/29 15:55:13 (took 00:00:36.4190725)
-Status 200:    61343
+  98%   below 3ms
+  99%   below 4ms
+99.9%   below 10ms
 
-RPS: 1967.3 (requests/second)
-Max: 126ms
-Min: 0ms
-Avg: 0.9ms
-
-  50%   below 0ms
-  60%   below 0ms
-  70%   below 0ms
-  80%   below 1ms
-  90%   below 1ms
-  95%   below 4ms
-  98%   below 11ms
-  99%   below 17ms
-99.9%   below 36ms
 ```
+
 3.（选做）如果自己本地有可以运行的项目，可以按照 2 的方式进行演练。
 ```
 ```
@@ -316,24 +294,103 @@ Avg: 0.9ms
 5.（选做）运行课上的例子，以及 Netty 的例子，分析相关现象。
 
 一：压测HttpServer01,02,03三个程序：
-1. 测试了多次，-c参数不能过大，最大到16就无法运行（猜测和CPU核数有关，本机是4核4C），
-多次压测发现配置并发数为4，RPS最大 
+1. **使用的参数是20并发，40无法启动**
 2. 使用线程池比创建线程的RPS高（线程复用减少了线程创建和销毁的消耗）
-3. 但是，单线程串行消费RPS最高，这个和课件有较大出入？未弄清楚原因，还望老师解答
+3. 但是，**单线程串行消费RPS>线程池>多线程，这个和课件有较大出入？未弄清楚原因，还望老师解答**
 
 测试命令和日志：
- sb -u http://localhost:8801 -c 4 -N 30
+ sb -u http://localhost:8801 -c 20 -N 30
 ```
-Starting at 2021/6/29 15:08:30
+PS F:\github\JavaCourseCodes> sb -u http://localhost:8801 -c 20 -N 30
+Starting at 2021/6/30 9:06:39
 [Press C to stop the test]
-77127   (RPS: 3084.2)
+81689   (RPS: 2330.8)                   
 ---------------Finished!----------------
-Finished at 2021/6/29 15:08:55 (took 00:00:25.1405961)
-Status 200:    77050
-Status 303:    77
+Finished at 2021/6/30 9:07:14 (took 00:00:35.2723173)
+Status 303:    6615
+Status 200:    75074
 
-RPS: 3650.6 (requests/second)
-Max: 46ms
+RPS: 2616.9 (requests/second)
+Max: 82ms
+Min: 0ms
+Avg: 0.8ms
+
+  50%   below 0ms
+  60%   below 0ms
+  70%   below 0ms
+  80%   below 1ms
+  90%   below 3ms
+  95%   below 5ms
+  98%   below 8ms
+  99%   below 10ms
+99.9%   below 21ms
+```
+sb -u http://localhost:8802 -c 20 -N 30
+```
+PS F:\github\JavaCourseCodes> sb -u http://localhost:8802 -c 20 -N 30
+Starting at 2021/6/30 9:04:19
+[Press C to stop the test]
+63152   (RPS: 1804.9)                   
+---------------Finished!----------------
+Finished at 2021/6/30 9:04:55 (took 00:00:35.1957415)
+Status 200:    63046
+Status 303:    106
+
+RPS: 2024.3 (requests/second)
+Max: 180ms
+Min: 0ms
+Avg: 2.9ms
+
+  50%   below 1ms
+  60%   below 2ms
+  70%   below 4ms
+  80%   below 5ms
+  90%   below 7ms
+  95%   below 9ms
+  98%   below 12ms
+  99%   below 16ms
+99.9%   below 65ms
+```
+sb -u http://localhost:8803 -c 20 -N 30
+```
+PS F:\github\JavaCourseCodes> sb -u http://localhost:8803 -c 20 -N 30
+Starting at 2021/6/30 9:05:41
+[Press C to stop the test]
+78433   (RPS: 2248.9)                   
+---------------Finished!----------------
+Finished at 2021/6/30 9:06:16 (took 00:00:34.9301078)
+Status 200:    71332
+Status 303:    7112
+
+RPS: 2527.5 (requests/second)
+Max: 107ms
+Min: 0ms
+Avg: 1.1ms
+
+  50%   below 0ms
+  60%   below 0ms
+  70%   below 0ms
+  80%   below 2ms
+  90%   below 4ms
+  95%   below 6ms
+  98%   below 9ms
+  99%   below 11ms
+99.9%   below 25ms
+```
+二：netty相关演示：
+
+**netty压测 c15 ,c20无法启动** 
+```
+PS F:\github\JavaCourseCodes> sb -u http://localhost:8808 -c 15 -N 30
+Starting at 2021/6/30 9:15:46
+[Press C to stop the test]
+134089  (RPS: 3838.9)                   
+---------------Finished!----------------
+Finished at 2021/6/30 9:16:22 (took 00:00:35.1581711)
+Status 200:    134093
+
+RPS: 4295.2 (requests/second)
+Max: 54ms
 Min: 0ms
 Avg: 0.1ms
 
@@ -342,92 +399,12 @@ Avg: 0.1ms
   70%   below 0ms
   80%   below 0ms
   90%   below 0ms
-  95%   below 1ms
+  95%   below 0ms
   98%   below 1ms
   99%   below 2ms
-99.9%   below 10ms
-```
-
-sb -u http://localhost:8801 -c 15 -N 30
-```
-Starting at 2021/6/29 15:13:54
-[Press C to stop the test]
-62490   (RPS: 1780.9)
----------------Finished!----------------
-Finished at 2021/6/29 15:14:30 (took 00:00:35.2512733)
-Status 303:    11208
-Status 200:    51336
-
-RPS: 2008.1 (requests/second)
-Max: 120ms
-Min: 0ms
-Avg: 1.9ms
-
-  50%   below 0ms
-  60%   below 1ms
-  70%   below 1ms
-  80%   below 2ms
-  90%   below 6ms
-  95%   below 10ms
-  98%   below 15ms
-  99%   below 20ms
-99.9%   below 39ms
-```
-sb -u http://localhost:8802 -c 4 -N 30
-```
-Starting at 2021/6/29 15:37:50
-[Press C to stop the test]
-51154   (RPS: 1422.7)
----------------Finished!----------------
-Finished at 2021/6/29 15:38:26 (took 00:00:36.1621225)
-Status 200:    50999
-Status 303:    156
-
-RPS: 1640.3 (requests/second)
-Max: 110ms
-Min: 0ms
-Avg: 1.5ms
-
-  50%   below 1ms
-  60%   below 1ms
-  70%   below 1ms
-  80%   below 1ms
-  90%   below 2ms
-  95%   below 7ms
-  98%   below 10ms
-  99%   below 11ms
-99.9%   below 16ms
-```
-sb -u http://localhost:8803 -c 8 -N 30
-```
-Starting at 2021/6/29 15:36:58
-[Press C to stop the test]
-53684   (RPS: 1492.2)
----------------Finished!----------------
-Finished at 2021/6/29 15:37:34 (took 00:00:36.1072457)
-Status 200:    52850
-Status 303:    854
-
-RPS: 1726.6 (requests/second)
-Max: 116ms
-Min: 0ms
-Avg: 1.4ms
-
-  50%   below 0ms
-  60%   below 1ms
-  70%   below 1ms
-  80%   below 1ms
-  90%   below 3ms
-  95%   below 8ms
-  98%   below 12ms
-  99%   below 14ms
-99.9%   below 24ms
-```
-二：netty相关演示：
-```
+99.9%   below 5ms
 
 ```
-
 6.（必做）写一段代码，使用 HttpClient 或 OkHttp 访问  http://localhost:8801 ，代码提交到 GitHub
 ```
 ```
