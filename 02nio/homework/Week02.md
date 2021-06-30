@@ -407,4 +407,6 @@ Avg: 0.1ms
 ```
 6.（必做）写一段代码，使用 HttpClient 或 OkHttp 访问  http://localhost:8801 ，代码提交到 GitHub
 ```
+代码路径
+02nio/nio01/src/main/java/java0/nio01/netty/HttpClientDemo.java
 ```
