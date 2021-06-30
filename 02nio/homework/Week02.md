@@ -379,7 +379,7 @@ Avg: 1.1ms
 ```
 二：netty相关演示：
 
-**netty压测 c15 ,c20无法启动** 
+**netty压测 c15 ,c20无法启动  原因是？** 
 ```
 PS F:\github\JavaCourseCodes> sb -u http://localhost:8808 -c 15 -N 30
 Starting at 2021/6/30 9:15:46
