@@ -289,8 +289,38 @@ Avg: 0.2ms
 ```
 ```
 4.（必做）根据上述自己对于 1 和 2 的演示，写一段对于不同 GC 和堆内存的总结，提交到 GitHub。
-```
-```
+
+堆内存：
+  是所有线程公用的内存区间，主要分为年轻代，老年代。年轻代分为eden,s0,s1三个区间用于使用标记-复制算法。
+
+GC：
+**串行：-XX：+UseSerialGC **
+  1. 单线程回收，都触发STW
+  2. 在年轻代使用 标记-复制（mark-copy）算法，在老年代使用 标记-清除-整理（mark-sweepcompact）算法
+  3. 适用于单CPU的主机，CPU利用率高
+**并行：-XX：+UseParallelGC（JDK6-8默认）:**
+  1. 多线程回收，都触发STW
+  2. 在年轻代使用 标记-复制（mark-copy）算法，在老年代使用 标记-清除-整理（mark-sweepcompact）算法
+  3. 并行垃圾收集器适用于多核服务器，主要目标是增加吞吐量。因为对系统资源的有效使用，能达到更高的吞吐量
+  4. -XX：ParallelGCThreads=N 来指定 GC 线程数， 其默认值为 CPU 核心数
+**CMS：-XX：+UseConcMarkSweepGC :**
+  1. 避免在老年代垃圾收集时出现长时间的卡顿
+  2. 其对年轻代采用并行 STW 方式的 mark-copy (标记-复制)算法，对老年代主要使用并发 mark-sweep (标记-清除)算法
+  3. 如果服务器是多核 CPU，并且主要调优目标是降低 GC 停顿导致的系统延迟，那么使用 CMS 是个很明智的选择
+  4. 6个阶段，STW在1,4
+  - 阶段 1: Initial Mark（初始标记）
+  - 阶段 2: Concurrent Mark（并发标记）
+  - 阶段 3: Concurrent Preclean（并发预清理）
+  - 阶段 4: Final Remark（最终标记）
+  - 阶段 5: Concurrent Sweep（并发清除）
+  - 阶段 6: Concurrent Reset（并发重置）
+**G1：-XX：+UseG1GC（JDK9开始默认） :**
+  1. 将 STW 停顿的时间和分布，变成可预期且可配置的，
+  2. 堆不再分成年轻代和老年代，而是划分为多个（通常是2048个）可以存放对象的小块堆区域(smaller heap regions)。每个小块，可能一会被定义成 Eden 区，一会被指定为 Survivor区或者Old 区。
+  3. -XX:+UseG1GC -XX:MaxGCPauseMillis=50 （配置暂停时间）
+  4. 每次只处理一部分内存块，称为此次 GC 的回收集(collection set)。每次 GC 暂停都会收集所有年轻代的内存块，但一般只包含部分老年代的内存块；垃圾最多的小块会优先收集
+**总结：根据场景选择不同的GC回收器，通过工具、压测、日志等进行GC问题排查**  
+
 5.（选做）运行课上的例子，以及 Netty 的例子，分析相关现象。
 
 一：压测HttpServer01,02,03三个程序：
