@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.LongAdder;
 /*
 演示GC日志生成与解读
 */
-public class GCLogAnalysis {
+public class GCLogAnalysis2 {
     // 随机数; 记得这里可以设置随机数种子;
     private static Random random = new Random();
     public static void main(String[] args) {
