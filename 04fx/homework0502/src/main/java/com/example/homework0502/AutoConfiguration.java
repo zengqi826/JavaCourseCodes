@@ -1,6 +1,5 @@
 package com.example.homework0502;
 
-import io.kimmking.spring01.Student;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

@@ -1,6 +1,5 @@
 package com.example.homework0502;
 
-import io.kimmking.spring01.Student;
 import lombok.Data;
 
 @Data
