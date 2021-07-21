@@ -1,4 +1,4 @@
-package io.kimmking.spring01;
+package com.example.homework0502;
 
 
 import lombok.AllArgsConstructor;
