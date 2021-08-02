@@ -28,7 +28,7 @@ CREATE TABLE `product` (
 
 CREATE TABLE `order` (
                          `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
-                         `order_id` varchar(32) NOT NULL DEFAULT '' COMMENT '订单号',
+                         `order_id` varchar(64) NOT NULL DEFAULT '' COMMENT '订单号',
                          `product_code` varchar(32) NOT NULL DEFAULT '' COMMENT '商品代码',
                          `user_name` varchar(32) NOT NULL DEFAULT '' COMMENT '用户名',
                          `count` int(11) NOT NULL DEFAULT '0' COMMENT '购买数量',
