@@ -52,5 +52,22 @@ public class Homework0801ApplicationTests {
 
     }
 
+    @Test
+    public void xaTest() {
+        for (int i = 0; i <= 5; i++) {
+            Order order = new Order();
+            order.setUserId(Long.valueOf(i));
+            order.setStatus("xa");
+            int orderResult = orderRepository.insert(order);
+            Assert.assertEquals(1, orderResult);
+
+            Order order2 = new Order();
+            order2.setUserId(Long.valueOf(i));
+            order2.setStatus("xa2");
+            int orderResult2 = orderRepository.insert(order2);
+            Assert.assertEquals(1, orderResult2);
+
+        }
+    }
 
 }
