@@ -3,16 +3,36 @@ package io.kimmking.rpcfx.client;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
-import io.kimmking.rpcfx.api.*;
+import io.kimmking.rpcfx.api.Filter;
+import io.kimmking.rpcfx.api.LoadBalancer;
+import io.kimmking.rpcfx.api.Router;
+import io.kimmking.rpcfx.api.RpcfxRequest;
+import io.kimmking.rpcfx.api.RpcfxResponse;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.http.*;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import org.springframework.cglib.proxy.Enhancer;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,8 +62,12 @@ public final class Rpcfx {
     public static <T> T create(final Class<T> serviceClass, final String url, Filter... filters) {
 
         // 0. 替换动态代理 -> 字节码生成
-        return (T) Proxy.newProxyInstance(Rpcfx.class.getClassLoader(), new Class[]{serviceClass}, new RpcfxInvocationHandler(serviceClass, url, filters));
-
+       // return (T) Proxy.newProxyInstance(Rpcfx.class.getClassLoader(), new Class[]{serviceClass},
+       //         new RpcfxInvocationHandler(serviceClass, url, filters));
+        Enhancer enhancer = new Enhancer();
+        enhancer.setCallback(new CglibMethodInterceptor(serviceClass, url,filters));
+        enhancer.setSuperclass(serviceClass);
+        return (T) enhancer.create();
     }
 
     public static class RpcfxInvocationHandler implements InvocationHandler {
@@ -83,7 +107,8 @@ public final class Rpcfx {
                 }
             }
 
-            RpcfxResponse response = post(request, url);
+            //RpcfxResponse response = post(request, url);
+            RpcfxResponse response = postByNetty(request, url);
 
             // 加filter地方之三
             // Student.setTeacher("cuijing");
@@ -108,6 +133,54 @@ public final class Rpcfx {
             String respJson = client.newCall(request).execute().body().string();
             System.out.println("resp json: "+respJson);
             return JSON.parseObject(respJson, RpcfxResponse.class);
+        }
+
+        private RpcfxResponse postByNetty(RpcfxRequest req, String url) throws Exception {
+            String reqJson = JSON.toJSONString(req);
+            System.out.println("req json: "+reqJson);
+
+            EventLoopGroup bossGroup = new NioEventLoopGroup();
+            Bootstrap bs = new Bootstrap();
+            final RpcfxResponse finalResponse = new RpcfxResponse();
+            bs.group(bossGroup)
+                    .channel(NioSocketChannel.class)
+                    .handler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel socketChannel) throws Exception {
+                            ChannelPipeline p = socketChannel.pipeline();
+                            p.addLast(new HttpClientCodec());
+                            p.addLast(new HttpContentDecompressor());
+                            p.addLast(new HttpObjectAggregator(65533));
+                            p.addLast(new SimpleChannelInboundHandler<FullHttpResponse>() {
+                                @Override
+                                protected void channelRead0(ChannelHandlerContext channelHandlerContext, FullHttpResponse response) throws Exception {
+                                    String respJson = response.content().toString(StandardCharsets.UTF_8);
+                                    RpcfxResponse rpcfxResponse = JSON.parseObject(respJson, RpcfxResponse.class);
+                                    finalResponse.setException(rpcfxResponse.getException());
+                                    finalResponse.setStatus(rpcfxResponse.isStatus());
+                                    finalResponse.setResult(rpcfxResponse.getResult());
+                                }
+                            });
+                        }
+                    });
+            try {
+                URI uri = new URI(url);
+                Channel ch = bs.connect(uri.getHost(), uri.getPort()).sync().channel();
+                FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, uri.getRawPath());
+                request.headers().set(HttpHeaderNames.HOST, uri.getHost());
+                request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+                request.headers().set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
+                request.headers().add(HttpHeaderNames.CONTENT_TYPE, JSONTYPE);
+                ByteBuf bbuf = Unpooled.copiedBuffer(reqJson, StandardCharsets.UTF_8);
+                request.headers().set(HttpHeaderNames.CONTENT_LENGTH, bbuf.readableBytes());
+                request.content().clear().writeBytes(bbuf);
+                ch.writeAndFlush(request);
+                ch.closeFuture().sync();
+                bossGroup.shutdownGracefully();
+            } catch (InterruptedException | URISyntaxException e) {
+                e.printStackTrace();
+            }
+            return finalResponse;
         }
     }
 }

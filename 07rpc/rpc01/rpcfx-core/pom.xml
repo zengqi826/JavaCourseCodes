@@ -35,8 +35,6 @@
 			<artifactId>okhttp</artifactId>
 			<version>3.12.2</version>
 		</dependency>
-
-
 		<dependency>
 			<groupId>org.apache.curator</groupId>
 			<artifactId>curator-client</artifactId>
@@ -69,6 +67,11 @@
 					<artifactId>junit-vintage-engine</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-all</artifactId>
+			<version>4.1.51.Final</version>
 		</dependency>
 	</dependencies>
 
