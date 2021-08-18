@@ -5,6 +5,10 @@ spring:
   main:
     allow-bean-definition-overriding: true
     web-application-type: none
+  datasource:
+    url: jdbc:mysql://localhost:3306/ds0?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8
+    username: root
+    password: 1234
 dubbo:
   scan:
     base-packages: io.kimmking.dubbo.demo.consumer

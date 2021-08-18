@@ -1,4 +1,4 @@
-package io.kimmking.dubbo.demo.api;
+package io.kimmking.dubbo.demo.api.entity;
 
 public class User implements java.io.Serializable {
 

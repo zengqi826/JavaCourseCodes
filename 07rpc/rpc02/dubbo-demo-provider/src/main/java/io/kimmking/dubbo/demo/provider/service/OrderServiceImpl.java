@@ -1,7 +1,7 @@
-package io.kimmking.dubbo.demo.provider;
+package io.kimmking.dubbo.demo.provider.service;
 
-import io.kimmking.dubbo.demo.api.Order;
-import io.kimmking.dubbo.demo.api.OrderService;
+import io.kimmking.dubbo.demo.api.entity.Order;
+import io.kimmking.dubbo.demo.api.service.OrderService;
 import org.apache.dubbo.config.annotation.DubboService;
 
 

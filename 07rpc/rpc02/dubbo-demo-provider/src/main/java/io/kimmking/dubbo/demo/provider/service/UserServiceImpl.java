@@ -1,7 +1,7 @@
-package io.kimmking.dubbo.demo.provider;
+package io.kimmking.dubbo.demo.provider.service;
 
-import io.kimmking.dubbo.demo.api.User;
-import io.kimmking.dubbo.demo.api.UserService;
+import io.kimmking.dubbo.demo.api.entity.User;
+import io.kimmking.dubbo.demo.api.service.UserService;
 import org.apache.dubbo.config.annotation.DubboService;
 
 @DubboService(version = "1.0.0")
