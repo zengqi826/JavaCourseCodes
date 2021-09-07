@@ -4,10 +4,14 @@ import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.command.ActiveMQTopic;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import javax.jms.*;
+import javax.jms.Destination;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -17,10 +21,11 @@ public class ActivemqApplication {
     public static void main(String[] args) {
 
         // 定义Destination
-        Destination destination = new ActiveMQTopic("test.topic");
-        // Destination destination = new ActiveMQQueue("test.queue");
+        Destination destinationTopic = new ActiveMQTopic("test.topic");
+        Destination destinationQueue = new ActiveMQQueue("test.queue");
 
-        testDestination(destination);
+        testDestination(destinationTopic);
+        testDestination(destinationQueue);
 
         //SpringApplication.run(ActivemqApplication.class, args);
     }
