@@ -1,6 +1,6 @@
 package io.kimmking.kmq.core;
 
-public class KmqProducer {
+public class KmqProducer<T> {
 
     private KmqBroker broker;
 
@@ -8,9 +8,11 @@ public class KmqProducer {
         this.broker = broker;
     }
 
-    public boolean send(String topic, KmqMessage message) {
+    public void send(String topic, KmqMessage<T> message) {
         Kmq kmq = this.broker.findKmq(topic);
-        if (null == kmq) throw new RuntimeException("Topic[" + topic + "] doesn't exist.");
-        return kmq.send(message);
+        if (null == kmq) {
+            throw new RuntimeException("Topic[" + topic + "] doesn't exist.");
+        }
+        kmq.send(message);
     }
 }

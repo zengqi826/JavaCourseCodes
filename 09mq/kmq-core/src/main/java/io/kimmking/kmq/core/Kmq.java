@@ -1,35 +1,39 @@
 package io.kimmking.kmq.core;
 
-import lombok.SneakyThrows;
-
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class Kmq {
 
-    public Kmq(String topic, int capacity) {
-        this.topic = topic;
-        this.capacity = capacity;
-        this.queue = new LinkedBlockingQueue(capacity);
-    }
 
     private String topic;
-
     private int capacity;
+    private int offset;
+    private Map<String, Integer> comsumerOffsetRecord;
+    private MessageQueue messageQueue;
 
-    private LinkedBlockingQueue<KmqMessage> queue;
-
-    public boolean send(KmqMessage message) {
-        return queue.offer(message);
+    public Kmq(String topic, int capacity) {
+        this.topic = topic;
+        messageQueue = new MessageQueue(capacity);
+        this.offset = 0;
+        comsumerOffsetRecord = new ConcurrentHashMap<>();
+    }
+    public <T>  void send(KmqMessage<T> mqMessage) {
+        messageQueue.write(mqMessage, this.offset);
+        this.offset++;
     }
 
-    public KmqMessage poll() {
-        return queue.poll();
+    public <T> KmqMessage<T> read(String consumerName) {
+        Integer offset = comsumerOffsetRecord.getOrDefault(consumerName, 0);
+        if (offset > this.offset) {
+            throw new RuntimeException("the message offset now is :"  + this.offset + ",but you want to read " + offset);
+        }
+        return  messageQueue.read(offset);
     }
 
-    @SneakyThrows
-    public KmqMessage poll(long timeout) {
-        return queue.poll(timeout, TimeUnit.MILLISECONDS);
+    public void commit(String consumerName) {
+        comsumerOffsetRecord.putIfAbsent(consumerName, 1);
+        comsumerOffsetRecord.computeIfPresent(consumerName, (s, v) -> v++);
     }
 
 }
